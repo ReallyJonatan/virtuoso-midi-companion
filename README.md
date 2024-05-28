@@ -18,7 +18,7 @@ The companion application will automatically prompt the user to download and ins
 
 6) Start your music program and enable LoopBe1 as the input MIDI port for the sampler or synthesizer plug-in you want to control.
 
-7) Start Virtuoso, go to Settings and click "Enable Remote Control".
+7) Start Virtuoso, go to Track Settings and click "Enable Remote Control".
 
 8) If you're running Virtuoso on a Windows computer, you may need to allow access to network again if you get a firewall warning.
 
