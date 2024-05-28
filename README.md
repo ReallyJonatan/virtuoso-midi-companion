@@ -3,4 +3,4 @@ An open-source companion application for [Virtuoso VR](https://www.virtuoso-vr.c
 
 Building the project using the supplied build.bat requires the [.NET 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 
-The companion application will automatically prompt the user to download and install the [loopBe1 Virtual MIDI Port](https://www.nerds.de/en/loopbe1.html). If you'd like to port the application to macOS, you can rewrite it to instead use the built in Virtual MIDI Ports that macOS can create. Feel free to fork the project or create a pull request if you'd like to add macOS support!
+The companion application will automatically prompt the user to download and install the [loopBe1 Virtual MIDI Port](https://www.nerds.de/en/loopbe1.html). If you'd like to build the application for macOS, you can rewrite it to instead use the built in Virtual MIDI Ports that macOS can create. Feel free to fork the project or create a pull request if you'd like to add macOS support!
