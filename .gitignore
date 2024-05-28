@@ -1,0 +1,101 @@
+﻿# Ignore Visual Studio temporary files, build results, and
+# user-specific files
+*.csproj.user
+*.csproj.translations
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files
+*.rsuser
+*.rslog
+*.sln.docstates
+
+# Auto-generated files
+Generated\
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+[Bb]uild/
+
+# Uncomment if you have a deployment package directory
+# publish/
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# DotNet
+.dotnet/
+
+# NuGet
+*.nupkg
+**/packages/*
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Other files and folders created by Visual Studio
+.vs/
+.vscode/
+.vscode-test/
+
+# Windows event logs
+*.evtx
+
+# Windows Service state file
+*.pid
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# JetBrains Rider
+.idea/
+.idea_modules/
+.idea.workspace
+.idea/.idea_modules/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/.idea_modules/*
+
+# JetBrains Rider logs
+.idea/logs/
+.idea/.idea/
+
+# Local History for IntelliJ-based IDEs
+.idea/localHistory
+
+# MongoDB logs
+mongod.log
+
+# Ignore user-specific settings in the Properties folder
+Properties/launchSettings.json
