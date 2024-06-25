@@ -180,9 +180,14 @@ namespace VirtuosoMIDICompanion {
         }
 
         private static bool SetupVirtualMidiPort() {
-            // TODO: Port for macOS using their built in virtual MIDI device capability
+            string portName;
+#if WINDOWS
+            portName = "LoopBe Internal MIDI";
+#elif MACOS
+            portName = "IAC Driver Bus 1";
+#endif
             for(int i = 0; i < OutputDevice.DeviceCount; i++) {
-                if(OutputDevice.GetDeviceCapabilities(i).name == "LoopBe Internal MIDI") {
+                if(OutputDevice.GetDeviceCapabilities(i).name == portName) {
                     Console.WriteLine($"Found virtual midi port: {OutputDevice.GetDeviceCapabilities(i).name}. Using as target.");
                     _outputDevice = new OutputDevice(i);
                     _outputDevice.Reset();
@@ -193,10 +198,17 @@ namespace VirtuosoMIDICompanion {
                 return true;
             }
             else {
+#if WINDOWS
                 Console.WriteLine("To use this app, LoopBe1 Virtual MIDI device must be installed and enabled.");
                 Console.WriteLine("Press any key to quit and proceed to file download.");
                 Console.ReadKey();
                 Process.Start(new ProcessStartInfo("https://www.nerds.de/data/setuploopbe1.exe") { UseShellExecute = true });
+#elif MACOS
+                Console.WriteLine("To use this app, IAC Driver must be enabled.");
+                Console.WriteLine("To enable IAC Driver, open Audio MIDI Setup, click Window -> Show MIDI Studio, double-click on IAC Driver, and check the 'Device is online' box.");
+                Console.WriteLine("Press any key to quit.");
+                Console.ReadKey();
+#endif
                 return false;
             }
         }
