@@ -8,7 +8,10 @@ using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using OscJack;
-using Sanford.Multimedia.Midi;
+using RtMidi.Core;
+using RtMidi.Core.Devices;
+using RtMidi.Core.Messages;
+using RtMidi.Core.Enums;
 
 namespace VirtuosoMIDICompanion {
     class Program {
@@ -23,8 +26,7 @@ namespace VirtuosoMIDICompanion {
         private static UdpClient _udpClient;
         private static int _broadcastPort = 9002;
         private static OscServer _oscServer;
-        private static OutputDevice _outputDevice;
-        private static ChannelMessageBuilder _channelMessageBuilder;
+        private static IMidiOutputDevice _outputDevice;
         private static Timer _broadcastTimer;
 
         private static int _receivedMessagesSinceLastMeasurement;
@@ -186,31 +188,27 @@ namespace VirtuosoMIDICompanion {
 #elif MACOS
             portName = "IAC Driver Bus 1";
 #endif
-            for(int i = 0; i < OutputDevice.DeviceCount; i++) {
-                if(OutputDevice.GetDeviceCapabilities(i).name == portName) {
-                    Console.WriteLine($"Found virtual midi port: {OutputDevice.GetDeviceCapabilities(i).name}. Using as target.");
-                    _outputDevice = new OutputDevice(i);
-                    _outputDevice.Reset();
-                    _channelMessageBuilder = new ChannelMessageBuilder();
+            foreach (var outputDeviceInfo in MidiDeviceManager.Default.OutputDevices) {
+                if (outputDeviceInfo.Name.Contains(portName)) {
+                    Console.WriteLine($"Found virtual midi port: {outputDeviceInfo.Name}. Using as target.");
+                    _outputDevice = outputDeviceInfo.CreateDevice();
+                    _outputDevice.Open();
+                    return true;
                 }
             }
-            if (_outputDevice != null) {
-                return true;
-            }
-            else {
+            Console.WriteLine("Port not found: " + portName);
 #if WINDOWS
-                Console.WriteLine("To use this app, LoopBe1 Virtual MIDI device must be installed and enabled.");
-                Console.WriteLine("Press any key to quit and proceed to file download.");
-                Console.ReadKey();
-                Process.Start(new ProcessStartInfo("https://www.nerds.de/data/setuploopbe1.exe") { UseShellExecute = true });
+            Console.WriteLine("To use this app, LoopBe1 Virtual MIDI device must be installed and enabled.");
+            Console.WriteLine("Press any key to quit and proceed to file download.");
+            Console.ReadKey();
+            Process.Start(new ProcessStartInfo("https://www.nerds.de/data/setuploopbe1.exe") { UseShellExecute = true });
 #elif MACOS
-                Console.WriteLine("To use this app, IAC Driver must be enabled.");
-                Console.WriteLine("To enable IAC Driver, open Audio MIDI Setup, click Window -> Show MIDI Studio, double-click on IAC Driver, and check the 'Device is online' box.");
-                Console.WriteLine("Press any key to quit.");
-                Console.ReadKey();
+            Console.WriteLine("To use this app, IAC Driver must be enabled.");
+            Console.WriteLine("To enable IAC Driver, open Audio MIDI Setup, click Window -> Show MIDI Studio, double-click on IAC Driver, and check the 'Device is online' box.");
+            Console.WriteLine("Press any key to quit.");
+            Console.ReadKey();
 #endif
-                return false;
-            }
+            return false;
         }
 
         private static void BuildAndSendMidiMessage(string[] splitOscAddress, OscDataHandle oscData) {
@@ -225,14 +223,14 @@ namespace VirtuosoMIDICompanion {
                     if (_settings.EnableAdditionalLogging) {
                         Console.WriteLine($"Note on: {noteOrParameterNumber} on channel {channel} with velocity {value}");
                     }
-                    _channelMessageBuilder.Command = ChannelCommand.NoteOn;
+                    _outputDevice.Send(new NoteOnMessage((Channel)channel, (Key)noteOrParameterNumber, value));
                     break;
                 case "noteoff":
                     if (_settings.EnableAdditionalLogging) {
                         Console.WriteLine($"Note off: {noteOrParameterNumber} on channel {channel}");
                     }
                     value = 0;
-                    _channelMessageBuilder.Command = ChannelCommand.NoteOff;
+                    _outputDevice.Send(new NoteOffMessage((Channel)channel, (Key)noteOrParameterNumber, 0));
                     break;
                 case "parameter":
                     if (ShouldDropToLimitMessageRate()) {
@@ -245,11 +243,11 @@ namespace VirtuosoMIDICompanion {
                         value = 127 - value;
                     }
                     if (noteOrParameterNumber == 128) { // Remapped to pitch wheel
-                        noteOrParameterNumber = 0; // Pitch wheel has no CC number
-                        _channelMessageBuilder.Command = ChannelCommand.PitchWheel;
+                        value = value * 128;
+                        _outputDevice.Send(new PitchBendMessage((Channel)channel, value));
                     } 
                     else {
-                        _channelMessageBuilder.Command = ChannelCommand.Controller;
+                        _outputDevice.Send(new ControlChangeMessage((Channel)channel, noteOrParameterNumber, value));
                     }
                     break;
                 case "volume":
@@ -257,19 +255,15 @@ namespace VirtuosoMIDICompanion {
                         return;
                     }
                     noteOrParameterNumber = 7; // Volume is always CC 7
-                    _channelMessageBuilder.Command = ChannelCommand.Controller;
+                    _outputDevice.Send(new ControlChangeMessage((Channel)channel, noteOrParameterNumber, value));
                     break;
                 default:
                     break;
             }
-            _channelMessageBuilder.MidiChannel = channel;
-            _channelMessageBuilder.Data1 = noteOrParameterNumber;
-            _channelMessageBuilder.Data2 = value;
-            _channelMessageBuilder.Build();
-            _outputDevice.Send(_channelMessageBuilder.Result);
         }
 
         private static bool ShouldDropToLimitMessageRate() {
+#if WINDOWS
             if (_settings.MaxParameterMessageRate > 0 || _settings.EnableAdditionalLogging) {
                 DateTime now = DateTime.Now;
                 TimeSpan span = now.Subtract(_lastMeasurement);
@@ -299,6 +293,9 @@ namespace VirtuosoMIDICompanion {
                 }
             }
             return false;
+#elif MACOS
+            return false;
+#endif
         }
     }
 }
