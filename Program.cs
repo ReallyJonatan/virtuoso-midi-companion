@@ -166,12 +166,32 @@ namespace VirtuosoMIDICompanion {
         }
 
         private static string GetLocalIPAddress() {
+#if WINDOWS
             var addresses = Dns.GetHostAddresses(Dns.GetHostName());
             foreach (var address in addresses) {
                 if (address.AddressFamily == AddressFamily.InterNetwork) {
                     return address.ToString();
                 }
             }
+#elif MACOS
+            NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+            foreach (NetworkInterface networkInterface in networkInterfaces)
+            {
+                if (networkInterface.OperationalStatus == OperationalStatus.Up &&
+                    networkInterface.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                {
+                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
+                    UnicastIPAddressInformationCollection unicastIPAddresses = ipProperties.UnicastAddresses;
+                    foreach (UnicastIPAddressInformation unicastIPAddress in unicastIPAddresses)
+                    {
+                        if (unicastIPAddress.Address.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            return unicastIPAddress.Address.ToString();
+                        }
+                    }
+                }
+            }
+#endif
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
