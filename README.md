@@ -12,9 +12,7 @@ On Windows, the companion application will automatically prompt the user to down
 
 3) [Windows] If you get a warning saying that Windows has protected your machine from an unknown app click More info then Run anyway.
 
-4a) [Windows] Follow the instructions in the companion app to install and run LoopBe1 virtual MIDI port. 
-
-4b) [MacOS] Follow the instructions in the companion app to enable an IAC bus on your system.
+4) Follow the instructions in the companion app to install and run LoopBe1 virtual MIDI port (Windows), or enable an IAC bus on your system (MacOS).
 
 5) Restart the companion app and make sure you allow it to access the network if you get a firewall warning.
 
