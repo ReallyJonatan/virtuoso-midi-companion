@@ -188,27 +188,38 @@ namespace VirtuosoMIDICompanion {
 #elif MACOS
             portName = "IAC Driver Bus 1";
 #endif
-            foreach (var outputDeviceInfo in MidiDeviceManager.Default.OutputDevices) {
-                if (outputDeviceInfo.Name.Contains(portName)) {
-                    Console.WriteLine($"Found virtual midi port: {outputDeviceInfo.Name}. Using as target.");
-                    _outputDevice = outputDeviceInfo.CreateDevice();
-                    _outputDevice.Open();
-                    return true;
+            while (true) {
+                foreach (var outputDeviceInfo in MidiDeviceManager.Default.OutputDevices) {
+                    Console.WriteLine("Found MIDI device: " + outputDeviceInfo.Name);
+                    if (outputDeviceInfo.Name.Contains(portName)) {
+                        Console.WriteLine($"Found virtual midi port: {outputDeviceInfo.Name}. Using as target.");
+                        _outputDevice = outputDeviceInfo.CreateDevice();
+                        _outputDevice.Open();
+                        return true;
+                    }
                 }
-            }
-            Console.WriteLine("Port not found: " + portName);
+                Console.WriteLine("Port not found: " + portName);
 #if WINDOWS
-            Console.WriteLine("To use this app, LoopBe1 Virtual MIDI device must be installed and enabled.");
-            Console.WriteLine("Press any key to quit and proceed to file download.");
-            Console.ReadKey();
-            Process.Start(new ProcessStartInfo("https://www.nerds.de/data/setuploopbe1.exe") { UseShellExecute = true });
+                Console.WriteLine("To use this app, LoopBe1 Virtual MIDI device must be installed and enabled.");
+                Console.WriteLine("Press any key to quit and proceed to file download.");
+                Console.ReadKey();
+                Process.Start(new ProcessStartInfo("https://www.nerds.de/data/setuploopbe1.exe") { UseShellExecute = true });
+                return false;
 #elif MACOS
-            Console.WriteLine("To use this app, IAC Driver must be enabled.");
-            Console.WriteLine("To enable IAC Driver, open Audio MIDI Setup, click Window -> Show MIDI Studio, double-click on IAC Driver, and check the 'Device is online' box.");
-            Console.WriteLine("Press any key to quit.");
-            Console.ReadKey();
+                Console.WriteLine("To use this app, IAC Driver must be enabled. Follow these steps to enable the IAC Driver:");
+                Console.WriteLine("1. Open the 'Audio MIDI Setup' application. You can find it using Spotlight search or in the Utilities folder inside Applications.");
+                Console.WriteLine("2. In Audio MIDI Setup, go to the menu bar and select 'Window' -> 'Show MIDI Studio'.");
+                Console.WriteLine("3. In the MIDI Studio window, double-click on the 'IAC Driver' icon to open its properties.");
+                Console.WriteLine("4. In the IAC Driver properties window, check the box next to 'Device is online' to enable it.");
+                Console.WriteLine("Press Enter once the IAC Driver is enabled, or any other key to quit.");
+                if (Console.ReadKey().Key == ConsoleKey.Enter)
+                {
+                    // Re-check if the IAC Driver has been enabled
+                    continue;
+                }
+                return false;
 #endif
-            return false;
+            }
         }
 
         private static void BuildAndSendMidiMessage(string[] splitOscAddress, OscDataHandle oscData) {
