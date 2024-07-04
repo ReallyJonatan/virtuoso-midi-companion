@@ -166,10 +166,10 @@ namespace VirtuosoMIDICompanion {
         }
 
         private static string GetLocalIPAddress() {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList) {
-                if (ip.AddressFamily == AddressFamily.InterNetwork) {
-                    return ip.ToString();
+            var addresses = Dns.GetHostAddresses(Dns.GetHostName());
+            foreach (var address in addresses) {
+                if (address.AddressFamily == AddressFamily.InterNetwork) {
+                    return address.ToString();
                 }
             }
             throw new Exception("No network adapters with an IPv4 address in the system!");
